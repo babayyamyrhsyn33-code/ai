@@ -77,7 +77,7 @@ jobs:
           with open(path, encoding="utf-8") as f: posts = json.load(f)
           if not isinstance(posts, list): sys.exit("ساختار فایل نوشته‌ها نامعتبر است.")
           app = open("assets/app.js", encoding="utf-8").read()
-          existing = set(re.findall(r\'\\{id:"([a-z0-9-]+)"\', app))
+          existing = set(re.findall(r'\{id:"([a-z0-9-]+)"', app))
           existing.update(p.get("id") for p in posts if isinstance(p, dict))
           if slug in existing: sys.exit("این شناسه قبلاً استفاده شده؛ یک شناسهٔ دیگر انتخاب کن.")
           blocks = []
