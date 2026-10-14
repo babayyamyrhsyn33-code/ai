@@ -1,0 +1,11 @@
+{
+  "name": "هم‌نوشت",
+  "short_name": "هم‌نوشت",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fbfaff",
+  "theme_color": "#6552d5",
+  "description": "وبلاگ فارسی دسترس‌پذیر، خودمانی و کمی کنایه‌زن."
+}
