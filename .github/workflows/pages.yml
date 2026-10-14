@@ -29,6 +29,7 @@ jobs:
           mkdir -p _site
           cp index.html _site/
           cp -R assets _site/assets
+          cp -R admin _site/admin
           cp README.md SECURITY.md robots.txt llms.txt manifest.webmanifest _site/
           python3 - <<'PY'
           import json, re
@@ -39,8 +40,9 @@ jobs:
           extra = json.loads(Path("assets/community-posts.json").read_text(encoding="utf-8"))
           ids += [p["id"] for p in extra if isinstance(p, dict) and isinstance(p.get("id"), str)]
           urls = [base] + [base + "?post=" + slug for slug in dict.fromkeys(ids)]
-          entries = "".join("  <url><loc>" + url + "</loc></url>\\n" for url in urls)
-          xml = '<?xml version="1.0" encoding="UTF-8"?>\\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\\n' + entries + '</urlset>\\n'
+          nl = chr(10)
+          entries = "".join("  <url><loc>" + url + "</loc></url>" + nl for url in urls)
+          xml = '<?xml version="1.0" encoding="UTF-8"?>' + nl + '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + nl + entries + '</urlset>' + nl
           Path("_site/sitemap.xml").write_text(xml, encoding="utf-8")
           PY
           touch _site/.nojekyll
