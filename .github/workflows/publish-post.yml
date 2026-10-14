@@ -1,0 +1,96 @@
+name: Publish a blog post
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: "عنوان نوشته"
+        required: true
+        type: string
+      slug:
+        description: "شناسهٔ پیوند انگلیسی؛ حروف کوچک، عدد و خط تیره"
+        required: true
+        type: string
+      category:
+        description: "دسته‌بندی نوشته"
+        required: true
+        type: choice
+        options:
+          - فناوری
+          - زندگی
+          - دسترس‌پذیری
+          - یادداشت
+      excerpt:
+        description: "خلاصهٔ کوتاه نوشته"
+        required: true
+        type: string
+      read_minutes:
+        description: "زمان مطالعه به دقیقه"
+        required: true
+        default: "3"
+        type: string
+      body:
+        description: "متن کامل؛ پاراگراف‌ها را با ||| جدا کن و برای تیتر فرعی از ### استفاده کن"
+        required: true
+        type: string
+permissions:
+  contents: write
+concurrency:
+  group: publish-post
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Validate and save post
+        env:
+          POST_TITLE: ${{ inputs.title }}
+          POST_SLUG: ${{ inputs.slug }}
+          POST_CATEGORY: ${{ inputs.category }}
+          POST_EXCERPT: ${{ inputs.excerpt }}
+          POST_READ: ${{ inputs.read_minutes }}
+          POST_BODY: ${{ inputs.body }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re, sys, datetime
+          path = "assets/community-posts.json"
+          title = os.environ["POST_TITLE"].strip()
+          slug = os.environ["POST_SLUG"].strip().lower()
+          category = os.environ["POST_CATEGORY"].strip()
+          excerpt = os.environ["POST_EXCERPT"].strip()
+          body = os.environ["POST_BODY"].strip()
+          allowed = {"فناوری", "زندگی", "دسترس‌پذیری", "یادداشت"}
+          if not title or len(title) > 180: sys.exit("عنوان خالی یا بیش از ۱۸۰ نویسه است.")
+          if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", slug) or len(slug) > 70: sys.exit("شناسه باید حروف کوچک انگلیسی، عدد و خط تیره باشد.")
+          if category not in allowed: sys.exit("دسته‌بندی معتبر نیست.")
+          if not excerpt or len(excerpt) > 500: sys.exit("خلاصه خالی یا بیش از ۵۰۰ نویسه است.")
+          if not body or len(body) > 30000: sys.exit("متن خالی یا بیش از ۳۰ هزار نویسه است.")
+          try: minutes = int(os.environ["POST_READ"])
+          except ValueError: sys.exit("زمان مطالعه باید عدد باشد.")
+          if minutes < 1 or minutes > 120: sys.exit("زمان مطالعه باید بین ۱ تا ۱۲۰ دقیقه باشد.")
+          with open(path, encoding="utf-8") as f: posts = json.load(f)
+          if not isinstance(posts, list): sys.exit("ساختار فایل نوشته‌ها نامعتبر است.")
+          if slug in {p.get("id") for p in posts}: sys.exit("این شناسه قبلاً استفاده شده؛ یک شناسهٔ دیگر انتخاب کن.")
+          blocks = []
+          for part in re.split(r"\s*\|\|\|\s*", body):
+              part = part.strip()
+              if not part: continue
+              if part.startswith("### ") and "\n" not in part:
+                  blocks.append(["h3", part[4:].strip()])
+              else:
+                  blocks.append(["p", part])
+          if not blocks: sys.exit("متن نوشته خالی است.")
+          today = datetime.datetime.now(datetime.timezone.utc).astimezone().strftime("%Y/%m/%d")
+          posts.insert(0, {"id": slug, "title": title, "cat": category, "date": today, "read": f"{minutes} دقیقه", "excerpt": excerpt, "body": blocks})
+          with open(path, "w", encoding="utf-8") as f:
+              json.dump(posts, f, ensure_ascii=False, indent=2)
+              f.write("\n")
+          PY
+      - name: Commit published post
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/community-posts.json
+          git commit -m "Publish blog post: ${{ inputs.slug }}"
+          git push
