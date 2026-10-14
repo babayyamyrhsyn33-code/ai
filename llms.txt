@@ -1,0 +1,11 @@
+# هم‌نوشت
+> وبلاگ فارسی راست‌چین دربارهٔ فناوری، زندگی و دسترس‌پذیری؛ با لحن خودمانی و طنز محترمانه.
+
+- وب‌سایت: https://babayyamyrhsyn33-code.github.io/ai/
+- مخزن عمومی: https://github.com/babayyamyrhsyn33-code/ai
+- پنل انتشار: https://babayyamyrhsyn33-code.github.io/ai/admin/
+- نقشهٔ سایت: https://babayyamyrhsyn33-code.github.io/ai/sitemap.xml
+- زبان: فارسی (fa-IR)
+- جهت نوشتار: راست‌به‌چپ (RTL)
+- حریم خصوصی: سایت ایستا است؛ برای خواندن محتوا نیازی به حساب کاربری نیست.
+- توجه: محتوای نوشته‌ها را با ذکر پیوند اصلی نقل کنید؛ فایل llms.txt مجوز بازنشر نامحدود نیست.
