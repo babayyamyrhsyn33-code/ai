@@ -21,13 +21,28 @@ jobs:
           test -f index.html
           test -f assets/style.css
           test -f assets/app.js
+          test -f assets/community-posts.json
           node --check assets/app.js
+          python3 -m json.tool assets/community-posts.json >/dev/null
       - name: Package site
         run: |
           mkdir -p _site
           cp index.html _site/
           cp -R assets _site/assets
-          cp README.md SECURITY.md _site/
+          cp README.md SECURITY.md robots.txt llms.txt manifest.webmanifest _site/
+          python3 - <<'PY'
+          import json, re
+          from pathlib import Path
+          base = "https://babayyamyrhsyn33-code.github.io/ai/"
+          app = Path("assets/app.js").read_text(encoding="utf-8")
+          ids = re.findall(r'\{id:"([a-z0-9-]+)"', app)
+          extra = json.loads(Path("assets/community-posts.json").read_text(encoding="utf-8"))
+          ids += [p["id"] for p in extra if isinstance(p, dict) and isinstance(p.get("id"), str)]
+          urls = [base] + [base + "?post=" + slug for slug in dict.fromkeys(ids)]
+          entries = "".join("  <url><loc>" + url + "</loc></url>\\n" for url in urls)
+          xml = '<?xml version="1.0" encoding="UTF-8"?>\\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\\n' + entries + '</urlset>\\n'
+          Path("_site/sitemap.xml").write_text(xml, encoding="utf-8")
+          PY
           touch _site/.nojekyll
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
