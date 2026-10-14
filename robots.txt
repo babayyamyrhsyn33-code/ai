@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Sitemap: https://babayyamyrhsyn33-code.github.io/ai/sitemap.xml
