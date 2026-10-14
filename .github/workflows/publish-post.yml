@@ -105,6 +105,7 @@ jobs:
           mkdir -p _site
           cp index.html _site/
           cp -R assets _site/assets
+          cp -R admin _site/admin
           cp README.md SECURITY.md robots.txt llms.txt manifest.webmanifest _site/
           python3 - <<'PY'
           import json, re
